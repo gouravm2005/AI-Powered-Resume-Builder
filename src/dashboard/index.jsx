@@ -15,13 +15,17 @@ function Dashboard() {
   /**
    * Used to Get Users Resume List
    */
-  const GetResumesList=()=>{
-    GlobalApi.GetUserResumes(user?.primaryEmailAddress?.emailAddress)
-    .then(resp=>{
-      console.log(resp.data.data)
-      setResumeList(resp.data.data);
+const GetResumesList = () => {
+  GlobalApi.GetUserResumes(user?.primaryEmailAddress?.emailAddress)
+    .then(resp => {
+      console.log(resp.data.data);
+      setResumeList(resp.data?.data || []); // fallback to []
     })
-  }
+    .catch(err => {
+      console.error("Error fetching resumes:", err);
+      setResumeList([]); // keep it safe
+    });
+};
   return (
     <div className='p-10 md:px-20 lg:px-32'>
       <h2 className='font-bold text-3xl'>My Resume</h2>
@@ -31,14 +35,20 @@ function Dashboard() {
       mt-10
       '>
         <AddResume/>
-        {resumeList.length>0?resumeList.map((resume,index)=>(
-          <ResumeCardItem resume={resume} key={index} refreshData={GetResumesList} />
-        )):
-        [1,2,3,4].map((item,index)=>(
-          <div className='h-[280px] rounded-lg bg-slate-200 animate-pulse'>
-          </div>
-        ))
-        }
+  {resumeList.length > 0
+  ? resumeList.map(resume => (
+      <ResumeCardItem
+        resume={resume}
+        key={resume.id} // use a unique id from your data
+        refreshData={GetResumesList}
+      />
+    ))
+  : [1, 2, 3, 4].map(item => (
+      <div
+        key={item} // add key here
+        className="h-[280px] rounded-lg bg-slate-200 animate-pulse"
+      ></div>
+    ))}
       </div>
     </div>
   )

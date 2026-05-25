@@ -10,23 +10,35 @@ function RichTextEditor({onRichTextEditorChange,index,defaultValue}) {
     const [value,setValue]=useState(defaultValue);
     const {resumeInfo,setResumeInfo}=useContext(ResumeInfoContext)
     const [loading,setLoading]=useState(false);
-    const GenerateSummeryFromAI=async()=>{
-     
-      if(!resumeInfo?.Experience[index]?.title)
-      {
-        toast('Please Add Position Title');
-        return ;
-      }
-      setLoading(true)
-      const prompt=PROMPT.replace('{positionTitle}',resumeInfo.Experience[index].title);
-      
-      const result=await AIChatSession.sendMessage(prompt);
-      console.log(result.response.text());
-      const resp=result.response.text()
-      setValue(resp.replace('[','').replace(']',''));
-      setLoading(false);
-    }
   
+    const GenerateSummeryFromAI = async () => {
+  if (!resumeInfo?.experience[index]?.title) {
+    toast('Please Add Position Title');
+    return;
+  }
+  setLoading(true);
+
+  const prompt = PROMPT.replace('{positionTitle}', resumeInfo.experience[index].title);
+
+  try {
+    const result = await AIChatSession.sendMessage(prompt);
+
+    // Always await the text function
+    const resp = await result.response.text();
+    console.log("AI summary:", resp);
+
+    // Store the raw HTML string
+    setValue(resp);
+    // Update parent state too
+    onRichTextEditorChange(resp, "workSummery", index);
+  } catch (err) {
+    console.error("AI error:", err);
+    toast("Failed to generate summary");
+  } finally {
+    setLoading(false);
+  }
+};
+
     return (
     <div>
       <div className='flex justify-between my-2'>
@@ -43,26 +55,27 @@ function RichTextEditor({onRichTextEditorChange,index,defaultValue}) {
         }
          </Button>
       </div>
-    <EditorProvider>
-      <Editor value={value} onChange={(e)=>{
-        setValue(e.target.value);
-        onRichTextEditorChange(e)
-      }}>
-         <Toolbar>
-          <BtnBold />
-          <BtnItalic />
-          <BtnUnderline />
-          <BtnStrikeThrough />
-          <Separator />
-          <BtnNumberedList />
-          <BtnBulletList />
-          <Separator />
-          <BtnLink />
-         
-         
-        </Toolbar>
-      </Editor>
-      </EditorProvider>
+      <EditorProvider>
+  <Editor
+    value={value}
+    onChange={(e) => {
+      setValue(e.target.value);
+      onRichTextEditorChange(e.target.value, "workSummery", index);
+    }}
+  >
+    <Toolbar>
+      <BtnBold />
+      <BtnItalic />
+      <BtnUnderline />
+      <BtnStrikeThrough />
+      <Separator />
+      <BtnNumberedList />
+      <BtnBulletList />
+      <Separator />
+      <BtnLink />
+    </Toolbar>
+  </Editor>
+</EditorProvider>
     </div>
   )
 }

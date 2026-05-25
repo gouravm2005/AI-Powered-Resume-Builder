@@ -20,9 +20,23 @@ function Skills() {
     const [loading,setLoading]=useState(false);
     const {resumeInfo,setResumeInfo}=useContext(ResumeInfoContext);
    
-    useEffect(()=>{
-        resumeInfo&&setSkillsList(resumeInfo?.skills)
-      },[])
+    // useEffect(()=>{
+    //     resumeInfo&&setSkillsList(resumeInfo?.skills)
+    //   },[])
+
+//     useEffect(() => {
+//   if (Array.isArray(resumeInfo?.skills)) {
+//     setSkillsList(resumeInfo.skills);
+//   } else {
+//     setSkillsList([{ name: "", rating: 0 }]);
+//   }
+// }, [resumeInfo]);
+
+useEffect(() => {
+  if (Array.isArray(resumeInfo?.skills)) {
+    setSkillsList(resumeInfo.skills);
+  }
+}, []);
    
     const handleChange=(index,name,value)=>{
         const newEntries=skillsList.slice();
@@ -31,57 +45,100 @@ function Skills() {
         setSkillsList(newEntries);
     }
 
-    const AddNewSkills=()=>{
-        setSkillsList([...skillsList,{
-            name:'',
-        rating:0 
-        }])
-    }
+    // const AddNewSkills=()=>{
+    //     setSkillsList([...skillsList,{
+    //         name:'',
+    //     rating:0 
+    //     }])
+    // }
+
+    const AddNewSkills = () => {
+  setSkillsList([
+    ...(skillsList || []),
+    { name: "", rating: 0 }
+  ]);
+};
+
     const RemoveSkills=()=>{
         setSkillsList(skillsList=>skillsList.slice(0,-1))
     }
 
-    const onSave=()=>{
+//     const onSave=()=>{
 
-        setLoading(true);
-        const data={
-            data:{
-                skills:skillsList.map(({ id, ...rest }) => rest)
-            }
-        }
+//         setLoading(true);
+//         // const data={
+//         //     data:{
+//         //         skills:skillsList.map(({ id, ...rest }) => rest)
+//         //     }
+//         // }
+//         const data = {
+//   data: {
+//     skills: (skillsList || []).map(({ id, ...rest }) => rest)
+//   }
+// };
 
-        GlobalApi.UpdateResumeDetail(resumeId,data)
-        .then(resp=>{
-            console.log(resp);
-            setLoading(false);
-            toast('Details updated !')
-        },(error)=>{
-            setLoading(false);
-            toast('Server Error, Try again!')
-        })
-    }
+//         GlobalApi.UpdateResumeDetail(resumeId,data)
+//         .then(resp=>{
+//             console.log(resp);
+//             setLoading(false);
+//             toast('Details updated !')
+//         },(error)=>{
+//             setLoading(false);
+//             toast('Server Error, Try again!')
+//         })
+//     }
 
-    useEffect(()=>{
-        setResumeInfo({
-            ...resumeInfo,
-            skills:skillsList
-        })
-    },[skillsList])
+const onSave=()=>{
+
+    setLoading(true);
+
+    const updatedSkills = (skillsList || []).map(({ id, ...rest }) => rest);
+
+    setResumeInfo(prev => ({
+        ...prev,
+        skills: updatedSkills
+    }));
+
+    const data = {
+      data: {
+        skills: updatedSkills
+      }
+    };
+
+    GlobalApi.UpdateResumeDetail(resumeId,data)
+    .then(resp=>{
+        console.log(resp);
+        setLoading(false);
+        toast('Details updated !')
+    })
+    .catch((error)=>{
+        setLoading(false);
+        toast('Server Error, Try again!')
+    })
+}
+
+
+    // useEffect(()=>{
+    //     setResumeInfo({
+    //         ...resumeInfo,
+    //         skills:skillsList
+    //     })
+    // },[skillsList])
   return (
     <div className='p-5 shadow-lg rounded-lg border-t-primary border-t-4 mt-10'>
     <h2 className='font-bold text-lg'>Skills</h2>
     <p>Add Your top professional key skills</p>
 
     <div>
-        {skillsList.map((item,index)=>(
-            <div className='flex justify-between mb-2 border rounded-lg p-3 '>
+        {skillsList?.map((item,index)=>(
+            <div  key={index} className='flex justify-between mb-2 border rounded-lg p-3 '>
                 <div>
                     <label className='text-xs'>Name</label>
                     <Input className="w-full"
-                    defaultValue={item.name}
+                    value={item.name || ""}
                     onChange={(e)=>handleChange(index,'name',e.target.value)} />
                 </div>
-                <Rating style={{ maxWidth: 120 }} value={item.rating} 
+                <Rating style={{ maxWidth: 120 }} value={item.rating || 0} 
                 onChange={(v)=>handleChange(index,'rating',v)}/>
 
             </div>

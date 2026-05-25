@@ -24,30 +24,59 @@ function AddResume() {
     const {user}=useUser();
     const [loading,setLoading]=useState(false);
     const navigation=useNavigate();
-    const onCreate=async()=>{
-        setLoading(true)
-        const uuid=uuidv4();
-        const data={
-            data:{
-                title:resumeTitle,
-                resumeId:uuid,
-                userEmail:user?.primaryEmailAddress?.emailAddress,
-                userName:user?.fullName
-            }
-        }
+    // const onCreate=async()=>{
+    //     setLoading(true)
+    //     const uuid=uuidv4();
+    //     const data={
+    //         data:{
+    //             title:resumeTitle,
+    //             resumeId:uuid,
+    //             userEmail:user?.primaryEmailAddress?.emailAddress,
+    //             userName:user?.fullName
+    //         }
+    //     }
 
-        GlobalApi.CreateNewResume(data).then(resp=>{
-            console.log(resp.data.data.documentId);
-            if(resp)
-            {
-                setLoading(false);
-                navigation('/dashboard/resume/'+resp.data.data.documentId+"/edit");
-            }
-        },(error)=>{
-            setLoading(false);
-        })
+    //     GlobalApi.CreateNewResume(data).then(resp=>{
+    //         console.log(resp.data.data.documentId);
+    //         if(resp)
+    //         {
+    //             setLoading(false);
+    //             navigation('/dashboard/resume/'+resp.data.data.documentId+"/edit");
+    //         }
+    //     },(error)=>{
+    //         setLoading(false);
+    //     })
 
+    // }
+
+    const onCreate = async () => {
+    setLoading(true)
+
+    const uuid = uuidv4();
+
+    const data = {
+        title: resumeTitle,
+        userEmail: user?.primaryEmailAddress?.emailAddress,
     }
+
+    GlobalApi.CreateNewResume(data).then(resp => {
+        console.log(resp.data.data.documentId);
+
+        if (resp) {
+            setLoading(false);
+
+            navigation(
+              '/dashboard/resume/' +
+              resp.data.data.documentId +
+              "/edit"
+            );
+        }
+    }, (error) => {
+        setLoading(false);
+        console.log(error);
+    })
+}
+
   return (
     <div >
         <div className='p-14 py-24 border 

@@ -11,7 +11,7 @@ import { AIChatSession } from './../../../../../service/AIModal';
 const prompt="Job Title: {jobTitle} , Depends on job title give me list of  summery for 3 experience level, Mid Level and Freasher level in 3 -4 lines in array format, With summery and experience_level Field in JSON Format"
 function Summery({enabledNext}) {
     const {resumeInfo,setResumeInfo}=useContext(ResumeInfoContext);
-    const [summery,setSummery]=useState();
+    const [summery,setSummery]=useState("");
     const [loading,setLoading]=useState(false);
     const params=useParams();
     const [aiGeneratedSummeryList,setAiGenerateSummeryList]=useState();
@@ -22,16 +22,47 @@ function Summery({enabledNext}) {
         })
     },[summery])
 
-    const GenerateSummeryFromAI=async()=>{
-        setLoading(true)
-        const PROMPT=prompt.replace('{jobTitle}',resumeInfo?.jobTitle);
-        console.log(PROMPT);
-        const result=await AIChatSession.sendMessage(PROMPT);
-        console.log(JSON.parse(result.response.text()))
+    // const GenerateSummeryFromAI=async()=>{
+    //     setLoading(true)
+    //     const PROMPT=prompt.replace('{jobTitle}',resumeInfo?.jobTitle);
+    //     console.log(PROMPT);
+    //     const result=await AIChatSession.sendMessage(PROMPT);
+    //     console.log(JSON.parse(result.response.text()))
        
-        setAiGenerateSummeryList(JSON.parse(result.response.text()))
-        setLoading(false);
+    //     setAiGenerateSummeryList(JSON.parse(result.response.text()))
+    //     setLoading(false);
+    // }
+
+    const GenerateSummeryFromAI = async () => {
+  setLoading(true);
+  const PROMPT = prompt.replace('{jobTitle}', resumeInfo?.jobTitle);
+  console.log(PROMPT);
+
+  try {
+    const result = await AIChatSession.sendMessage(PROMPT);
+
+    // Always await the text function
+    const respText = await result.response.text();
+    console.log("Raw AI response:", respText);
+
+    let parsed;
+    try {
+      // Try parsing JSON if the AI followed the prompt correctly
+      parsed = JSON.parse(respText);
+      setAiGenerateSummeryList(parsed);
+    } catch (err) {
+      // Fallback: if not JSON, just store as string
+      console.warn("Response was not valid JSON, storing raw text");
+      setAiGenerateSummeryList([{ summery: respText, experience_level: "Unknown" }]);
     }
+  } catch (error) {
+    console.error("Error generating summary:", error);
+    toast("Failed to generate summary");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     const onSave=(e)=>{
         e.preventDefault();
